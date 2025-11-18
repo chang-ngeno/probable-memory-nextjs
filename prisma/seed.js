@@ -22,11 +22,13 @@ async function main() {
   console.log('Seed: created demo users (email: demo@example.com, member@example.com)');
 }
 
-main()
-  .catch((e) => {
+(async () => {
+  try {
+    await main();
+  } catch (e) {
     console.error(e);
-    process.exit(1);
-  })
-  .finally(async () => {
+    process.exitCode = 1;
+  } finally {
     await prisma.$disconnect();
-  });
+  }
+})();
