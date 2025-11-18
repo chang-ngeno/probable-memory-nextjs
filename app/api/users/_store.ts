@@ -1,4 +1,5 @@
 import bcrypt from 'bcryptjs';
+import prismaClient from '../../../lib/prisma';
 
 type User = {
   id: string;
@@ -102,8 +103,37 @@ export function findUserByRole(role: string) {
 }
 
 // seed a sample user (passwords are demo-only and stored plaintext for the sample store)
-createUser({ name: 'Demo User', email: 'demo@example.com', role: 'admin', password: 'password' });
-// seed a demo non-admin user
-createUser({ name: 'Demo Member', email: 'member@example.com', role: 'user', password: 'password' });
+// If a database is configured, optionally migrate/seed from DB (non-blocking)
+const _maybeSeed = async () => {
+  try {
+    const url = process.env.DATABASE_URL;
+    if (!url) return;
+    // create demo users in DB if missing
+    await prismaClient.user.upsert({
+      where: { email: 'demo@example.com' },
+      update: {},
+      create: {
+        name: 'Demo User',
+        email: 'demo@example.com',
+        role: 'admin',
+        password: bcrypt.hashSync('password', 8),
+      },
+    });
+    await prismaClient.user.upsert({
+      where: { email: 'member@example.com' },
+      update: {},
+      create: {
+        name: 'Demo Member',
+        email: 'member@example.com',
+        role: 'user',
+        password: bcrypt.hashSync('password', 8),
+      },
+    });
+  } catch {
+    // ignore when no DB or migration not applied — keep file-based store as fallback
+  }
+};
+
+void _maybeSeed();
 
 export type { User };
