@@ -8,6 +8,7 @@ export default function EditUserPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [role, setRole] = useState('user');
+  const [password, setPassword] = useState('');
   const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -31,12 +32,15 @@ export default function EditUserPage() {
     if (!selected) return setMessage('Pick a user');
     setMessage(null);
     try {
-      const res = await fetch(`/api/users/${selected}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, email, role }) });
+      const body: any = { name, email, role };
+      if (password) body.password = password;
+      const res = await fetch(`/api/users/${selected}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
       if (res.ok) {
         setMessage('Updated');
         // refresh list
         const list = await fetch('/api/users').then((r) => r.json()).catch(() => []);
         setUsers(Array.isArray(list) ? list : []);
+        setPassword('');
       } else {
         setMessage('Failed to update');
       }
@@ -75,6 +79,10 @@ export default function EditUserPage() {
             <option value="user">user</option>
             <option value="admin">admin</option>
           </select>
+        </div>
+        <div>
+          <label htmlFor="password" className="block text-sm font-medium mb-1">New password (leave blank to keep)</label>
+          <input id="password" title="Password" placeholder="New password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full border rounded px-3 py-2" />
         </div>
         <div>
           <button type="submit" className="rounded bg-blue-600 text-white px-4 py-2">Update</button>

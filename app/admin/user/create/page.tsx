@@ -6,6 +6,7 @@ export default function CreateUserPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [role, setRole] = useState('user');
+  const [password, setPassword] = useState('');
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -13,14 +14,20 @@ export default function CreateUserPage() {
     e.preventDefault();
     setMessage(null);
     setLoading(true);
+    if (!name || !email || !password) {
+      setMessage('Name, email and password are required');
+      setLoading(false);
+      return;
+    }
     try {
-      const res = await fetch('/api/users', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, email, role }) });
+      const res = await fetch('/api/users', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, email, role, password }) });
       if (res.ok) {
         const data = await res.json();
         setMessage(`Created user ${data.id}`);
         setName('');
         setEmail('');
         setRole('user');
+        setPassword('');
       } else {
         const err = await res.json().catch(() => ({}));
         setMessage((err && err.message) || 'Failed to create');
@@ -51,6 +58,10 @@ export default function CreateUserPage() {
             <option value="user">user</option>
             <option value="admin">admin</option>
           </select>
+        </div>
+        <div>
+          <label htmlFor="password" className="block text-sm font-medium mb-1">Password</label>
+          <input id="password" title="Password" placeholder="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full border rounded px-3 py-2" />
         </div>
         <div>
           <button type="submit" disabled={loading} className="rounded bg-blue-600 text-white px-4 py-2">
