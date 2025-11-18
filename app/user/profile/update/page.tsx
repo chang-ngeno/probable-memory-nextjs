@@ -1,4 +1,4 @@
- 'use client';
+"use client";
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -36,7 +36,6 @@ export default function UpdateProfilePage() {
         }
       } catch (error) {
         // log error and show friendly message
-        // eslint-disable-next-line no-console
         console.error('fetch /api/auth/me failed', error);
         if (mounted) setMessage('Failed to fetch user');
       }
@@ -52,7 +51,7 @@ export default function UpdateProfilePage() {
     if (!id) return setMessage('No user id');
     setLoading(true);
     try {
-      const body: any = { id, name, email };
+      const body: Partial<{ id: string; name: string; email: string; password?: string }> = { id, name, email };
       if (password) body.password = password;
       const res = await fetch('/api/users/profile', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), credentials: 'include' });
       if (res.ok) {
@@ -66,7 +65,6 @@ export default function UpdateProfilePage() {
         setMessage(err?.message || 'Update failed');
       }
     } catch (error) {
-      // eslint-disable-next-line no-console
       console.error('update profile failed', error);
       setMessage('Update failed');
     } finally {
